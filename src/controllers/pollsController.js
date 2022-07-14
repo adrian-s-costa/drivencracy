@@ -89,7 +89,7 @@ export async function getPollChoice (req, res){
 
 export async function postChoiceVote(req, res){
 
-    const choiceCheck = await db.collection('polls').findOne({pollId: objectId(req.params.id)});
+    const choiceCheck = await db.collection('polls').findOne({ _id : objectId(req.params.id) });
 
     if(!choiceCheck){
         return res.sendStatus(404);
@@ -105,9 +105,53 @@ export async function postChoiceVote(req, res){
         return res.sendStatus(403);
     }
 
-    const choiceCheckArray = await db.collection('polls').findOne({pollId: objectId(req.params.id)});
-
-    await db.collection('polls').insertOne({createdAt: new Date(), choiceId: objectId(choiceCheckArray._id)});
+    await db.collection('polls').insertOne({createdAt: new Date(), choiceId: objectId(req.params.id)});
 
     return res.sendStatus(201);
+}
+
+export async function getPollResult(req, res){
+    
+    const checkPoll = await db.collection('polls').findOne({_id: objectId (req.params.id)});
+
+    if(!checkPoll){
+        return res.sendStatus(404);
+    }
+    
+    const opcoesVoto = await db.collection('polls').find({pollId: objectId (req.params.id)}).toArray();
+
+    let arrVotos = [];
+    let votes = 0
+
+    for (let i = 0; i < opcoesVoto.length; i++){
+        votes = await db.collection('polls').find({choiceId: objectId(opcoesVoto[i]._id)}).count();
+        arrVotos.push(votes);
+    }
+
+    const maxVotes = Math.max(...arrVotos);
+    let resultArr = [];
+
+    for (let i = 0; i < arrVotos.length; i++){
+        votes = await db.collection('polls').find({choiceId: objectId(opcoesVoto[i]._id)}).count();
+        console.log(votes)
+        console.log(maxVotes)
+        if(votes == maxVotes){
+            resultArr = opcoesVoto[i];
+            console.log(resultArr)
+        }
+        
+    }
+
+    const poll = await db.collection('polls').find({ _id : objectId(req.params.id) }).toArray();
+
+    res.send({
+        _id: req.params.id,
+        title: poll[0].title,
+        expireAt: poll[0].expireAt,
+        result:{
+            title: resultArr.title,
+            votes: maxVotes
+        }
+    })
+
 }
