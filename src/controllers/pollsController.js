@@ -55,8 +55,6 @@ export async function postChoice (req, res){
     }
 
     const choiceNameCheck = await db.collection('polls').findOne({pollId: new objectId(choice.pollId), title: choice.title});
-    
-    console.log(choiceNameCheck)
 
     if(choiceNameCheck){
         return res.sendStatus(409);
@@ -74,4 +72,17 @@ export async function postChoice (req, res){
 
     return res.sendStatus(201);
 
+}
+
+export async function getPollChoice (req, res){
+
+    const pollsOptions = await db.collection('polls').findOne({pollId: objectId(req.params.id)});
+
+    if(!pollsOptions){
+        return res.sendStatus(404);
+    }
+
+    const pollsOptionsMulti = await db.collection('polls').find({pollId: objectId(req.params.id)}).toArray();
+
+   return res.send(pollsOptionsMulti);
 }
