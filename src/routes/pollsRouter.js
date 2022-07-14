@@ -3,11 +3,11 @@ import { postPolls, getPolls, postChoice, getPollChoice, postChoiceVote, getPoll
 
 const router = Router();
 
-router.post('/poll', postPolls);
-router.get('/poll', getPolls);
-router.post('/choice', postChoice);
-router.get('/poll/:id/choice', getPollChoice);
-router.post('/choice/:id/vote', postChoiceVote);
-router.get('/poll/:id/result', getPollResult)
+router.post('https://api-drivencracy-a.herokuapp.com/poll', postPolls);
+router.get('https://api-drivencracy-a.herokuapp.com/poll', getPolls);
+router.post('https://api-drivencracy-a.herokuapp.com/choice', postChoice);
+router.get('https://api-drivencracy-a.herokuapp.com/poll/:id/choice', getPollChoice);
+router.post('https://api-drivencracy-a.herokuapp.com/choice/:id/vote', postChoiceVote);
+router.get('https://api-drivencracy-a.herokuapp.com/poll/:id/result', getPollResult)
 
 export default router;
