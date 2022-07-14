@@ -1,8 +1,8 @@
-import { db } from '../dbStrategy/mongo.js'
+import { db, objectId } from '../dbStrategy/mongo.js'
 import joi from 'joi';
 
 
-export async function polls (req, res){
+export async function postPolls (req, res){
     
     const poll = req.body;
     
@@ -27,4 +27,32 @@ export async function polls (req, res){
 
     res.sendStatus(201);
 
+}
+
+export async function getPolls (req, res){
+    const polls = await db.collection('polls').find({expireAt: {$exists:true}}).toArray();
+    res.send(polls)
+}
+
+export async function postChoice (req, res){
+    const choice = req.body;
+
+    console.log(choice)
+
+    const choiceSchema = joi.object({
+        title: joi.string().required(),
+        pollId: joi.string()
+    });
+
+    const { error } = choiceSchema.validate(choice);
+
+    if (error){
+        return res.sendStatus(422);
+    }
+
+    const choiceCheck = await db.collection('polls').findOne({_id: new objectId(choice.pollId)});
+
+    if(choiceCheck){
+        console.log("au")
+    }
 }
