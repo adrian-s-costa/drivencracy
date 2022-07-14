@@ -25,19 +25,17 @@ export async function postPolls (req, res){
 
     await db.collection('polls').insertOne(poll);
 
-    res.sendStatus(201);
+    return res.sendStatus(201);
 
 }
 
 export async function getPolls (req, res){
     const polls = await db.collection('polls').find({expireAt: {$exists:true}}).toArray();
-    res.send(polls)
+    return res.send(polls)
 }
 
 export async function postChoice (req, res){
     const choice = req.body;
-
-    console.log(choice)
 
     const choiceSchema = joi.object({
         title: joi.string().required(),
@@ -52,7 +50,28 @@ export async function postChoice (req, res){
 
     const choiceCheck = await db.collection('polls').findOne({_id: new objectId(choice.pollId)});
 
-    if(choiceCheck){
-        console.log("au")
+    if(!choiceCheck){
+        return res.sendStatus(404);
     }
+
+    const choiceNameCheck = await db.collection('polls').findOne({pollId: new objectId(choice.pollId), title: choice.title});
+    
+    console.log(choiceNameCheck)
+
+    if(choiceNameCheck){
+        return res.sendStatus(409);
+    }
+
+    const choiceExpirationCheck = await db.collection('polls').findOne({_id: new objectId(choice.pollId)});
+    
+    const d = new Date();
+
+    if ((choiceExpirationCheck.expireAt - d) < 0){
+        return res.sendStatus(403);
+    }
+
+    await db.collection('polls').insertOne({title: choice.title, pollId: objectId(choice.pollId)});
+
+    return res.sendStatus(201);
+
 }
