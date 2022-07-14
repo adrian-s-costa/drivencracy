@@ -86,3 +86,28 @@ export async function getPollChoice (req, res){
 
    return res.send(pollsOptionsMulti);
 }
+
+export async function postChoiceVote(req, res){
+
+    const choiceCheck = await db.collection('polls').findOne({pollId: objectId(req.params.id)});
+
+    if(!choiceCheck){
+        return res.sendStatus(404);
+    }
+
+    console.log(choiceCheck)
+
+    const pollCheckExpiration = await db.collection('polls').findOne({_id: objectId(choiceCheck.pollId)});
+
+    const d = new Date();
+
+    if ((pollCheckExpiration.expireAt - d) < 0){
+        return res.sendStatus(403);
+    }
+
+    const choiceCheckArray = await db.collection('polls').findOne({pollId: objectId(req.params.id)});
+
+    await db.collection('polls').insertOne({createdAt: new Date(), choiceId: objectId(choiceCheckArray._id)});
+
+    return res.sendStatus(201);
+}
